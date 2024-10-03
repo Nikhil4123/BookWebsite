@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "bookweb",
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"bookid",
+			"bookparadise",
+			"hashpasswrd"
+		]
+	}
+}

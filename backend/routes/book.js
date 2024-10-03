@@ -69,10 +69,8 @@ router.get("/get-all-books",  async (req, res) => {
 });
 
 router.get("/get-recent-books",  async (req, res) => {
-  console.log("hi")
     try {
       const books=await Book.find().sort({createAt: -1 }).limit(4);
-      console.log("books are" , books );
       return res.json({ 
         status:"success",
         data: books,

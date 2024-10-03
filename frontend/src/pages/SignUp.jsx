@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
+import axios from 'axios';
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -9,19 +11,30 @@ const SignUp = () => {
     address: '',
   });
 
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Perform form submission logic here
-    console.log(formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent page reload
+    try {
+      console.log(formData);
+
+      // Update URL with proper protocol and pass formData directly
+      const response = await axios.post("http://localhost:3100/api/v1/sign-up", formData);
+      
+      console.log(response.data);
+      navigate("/login"); // Navigate to login after successful sign-up
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-zinc-900 flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen animated-bg flex items-center justify-center px-4 py-8">
       <div className="bg-zinc-800 p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-3xl font-bold text-zinc-100 mb-6 text-center">Sign Up</h2>
         <form onSubmit={handleSubmit}>
@@ -88,6 +101,14 @@ const SignUp = () => {
             Sign Up
           </button>
         </form>
+
+        {/* Already have an account? Login */}
+        <div className="mt-6 text-center">
+          <p className="text-zinc-400">Already have an account?</p>
+          <Link to="/login" className="text-blue-500 hover:text-blue-400 font-semibold">
+            Login
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import React from "react";
 import Home from "./pages/home";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {Route, Routes } from "react-router-dom";
 import AllBooks from './pages/AllBooks';
 import Login from './pages/LogIn';
 import SignUp from "./pages/SignUp";
@@ -14,7 +14,6 @@ import ViewBookDetails from "./components/ViewBookDetails/ViewBookDetails";
 const App = () => {
   return (
     <div>
-      <Router>
         <Navbar />
         <Routes>
           <Route exact path="/" element={<Home />} />
@@ -27,7 +26,6 @@ const App = () => {
 
           </Routes>
           <Footer/>
-      </Router>
     </div>
   );
 };
