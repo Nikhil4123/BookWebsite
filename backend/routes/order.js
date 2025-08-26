@@ -4,23 +4,29 @@ const User = require("../models/user");
 const { authenticateToken } = require("./userAuth");
 const Book = require("../models/book");
 const Order = require("../models/orders");
+const Listing = require("../models/listing");
 const { Admin } = require("mongodb");
 
 router.post("/place-order", authenticateToken, async (req, res) => {
     try {
         const {id } =req.headers;
-        const {order}=req.body;
+        const {order, listingId}=req.body;
+        if (listingId) {
+            const listing = await Listing.findById(listingId).populate("bookRef");
+            if (!listing || listing.status !== "active") return res.status(400).json({ message: "Listing not available" });
+            const newOrder = new Order({ user: id, book: listing.bookRef, status: "order placed" });
+            const orderDataFromDb = await newOrder.save();
+            await User.findByIdAndUpdate(id, { $push: { orders: orderDataFromDb._id } });
+            listing.status = "sold";
+            await listing.save();
+            return res.json({ status:"Success", message:"Order Placed Successfully", data: orderDataFromDb });
+        }
+        // legacy cart checkout
         for(const orderData of order){
             const newOrder=new Order({user: id , book:orderData._id});
             const orderDataFromDb=await newOrder.save();
-            
-            await User.findByIdAndUpdate(id,{
-                $push:{orders:orderDataFromDb._id},
-            });
-            
-            await User.findByIdAndUpdate(id,{
-                $pull:{cart:orderData._id},
-            });
+            await User.findByIdAndUpdate(id,{ $push:{orders:orderDataFromDb._id} });
+            await User.findByIdAndUpdate(id,{ $pull:{cart:orderData._id} });
         }
         return res.json({
             status:"Success",

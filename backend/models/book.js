@@ -26,6 +26,20 @@ const books = new mongoose.Schema(
             type: String,
             required: true,
         },
+        status: {
+            type: String,
+            enum: ["pending", "active", "rejected"],
+            default: "pending"
+        },
+        addedBy: {
+            type: mongoose.Types.ObjectId,
+            ref: "user",
+            required: true
+        },
+        needsApproval: {
+            type: Boolean,
+            default: false
+        },
     },
 {timestamps:true}
 );

@@ -1,0 +1,402 @@
+{
+  "info": {
+    "_postman_id": "a5b5b2b8-0aa4-4d7f-bf51-3f4f2c5d9b01",
+    "name": "BookWebsite Backend - Full API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3101" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "targetUserId", "value": "" },
+    { "key": "bookId", "value": "" },
+    { "key": "orderId", "value": "" },
+    { "key": "conversationId", "value": "" },
+    { "key": "postId", "value": "" },
+    { "key": "blogId", "value": "" },
+    { "key": "requestId", "value": "" },
+    { "key": "authorId", "value": "" },
+    { "key": "tag", "value": "" },
+    { "key": "listingId", "value": "" },
+    { "key": "pendingBookId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/sign-up", "host": ["{{baseUrl}}"], "path": ["api","v1","sign-up"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"demoUser\",\n  \"email\": \"demo@example.com\",\n  \"password\": \"secret123\",\n  \"address\": \"Earth\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Sign In",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/sign-in", "host": ["{{baseUrl}}"], "path": ["api","v1","sign-in"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"demoUser\",\n  \"password\": \"secret123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res && res.token) {",
+                  "  pm.collectionVariables.set('token', res.token);",
+                  "}",
+                  "if (res && res.id) {",
+                  "  pm.collectionVariables.set('userId', res.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Marketplace",
+      "item": [
+        {
+          "name": "Create Resale Listing (instant)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/market/listings/resale", "host": ["{{baseUrl}}"], "path": ["api","v1","market","listings","resale"] },
+            "body": { "mode": "raw", "raw": "{\n  \"bookRef\": \"{{bookId}}\",\n  \"price\": 15,\n  \"condition\": \"good\",\n  \"deliveryOptions\": [\"ship\"],\n  \"location\": \"Earth\",\n  \"photos\": [],\n  \"notes\": \"Gently used\",\n  \"complianceAck\": true\n}" }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "const res = pm.response.json();",
+                "if (res && res.data && res.data._id) pm.collectionVariables.set('listingId', res.data._id);"
+              ] }
+            }
+          ]
+        },
+        {
+          "name": "Create Original Listing (needs approval)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "id", "value": "{{userId}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/market/listings/original", "host": ["{{baseUrl}}"], "path": ["api","v1","market","listings","original"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"My Original Book\",\n  \"authorName\": \"Me\",\n  \"isbn\": \"\",\n  \"language\": \"EN\",\n  \"desc\": \"Description...\",\n  \"coverUrl\": \"https://picsum.photos/200\",\n  \"docs\": [{\"url\": \"https://example.com/proof.pdf\", \"kind\": \"copyright_proof\"}],\n  \"price\": 25,\n  \"deliveryOptions\": [\"ship\"],\n  \"location\": \"Earth\",\n  \"photos\": [],\n  \"notes\": \"\",\n  \"complianceAck\": true\n}" }
+          }
+        },
+        {
+          "name": "Public Listings (active)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/market/listings?status=active", "host": ["{{baseUrl}}"], "path": ["api","v1","market","listings"], "query": [ { "key": "status", "value": "active" } ] } }
+        },
+        {
+          "name": "My Listings",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/market/my-listings", "host": ["{{baseUrl}}"], "path": ["api","v1","market","my-listings"] } }
+        },
+        {
+          "name": "Pause Listing",
+          "request": { "method": "PATCH", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/market/listings/{{listingId}}/pause", "host": ["{{baseUrl}}"], "path": ["api","v1","market","listings","{{listingId}}","pause"] } }
+        },
+        {
+          "name": "Resume Listing",
+          "request": { "method": "PATCH", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/market/listings/{{listingId}}/resume", "host": ["{{baseUrl}}"], "path": ["api","v1","market","listings","{{listingId}}","resume"] } }
+        },
+        {
+          "name": "Admin: Pending Verifications",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/admin/market/verification", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","market","verification"] } }
+        },
+        {
+          "name": "Admin: Approve Listing",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/market/verification/{{listingId}}/approve", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","market","verification","{{listingId}}","approve"] },
+            "body": { "mode": "raw", "raw": "{\n  \"duplicateOf\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Admin: Reject Listing",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/admin/market/verification/{{listingId}}/reject", "host": ["{{baseUrl}}"], "path": ["api","v1","admin","market","verification","{{listingId}}","reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Missing proof\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get My Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "id", "value": "{{userId}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/get-user-information", "host": ["{{baseUrl}}"], "path": ["api","v1","get-user-information"] }
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "id", "value": "{{userId}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/update-address", "host": ["{{baseUrl}}"], "path": ["api","v1","update-address"] },
+            "body": { "mode": "raw", "raw": "{\n  \"address\": \"New Address\"\n}" }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "id", "value": "{{userId}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/update-profile", "host": ["{{baseUrl}}"], "path": ["api","v1","update-profile"] },
+            "body": { "mode": "raw", "raw": "{\n  \"bio\": \"I love books\",\n  \"privacy\": \"public\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Books",
+      "item": [
+        {
+          "name": "Get All Books",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/get-all-books", "host": ["{{baseUrl}}"], "path": ["api","v1","get-all-books"] } }
+        },
+        {
+          "name": "Get Recent Books",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/get-recent-books", "host": ["{{baseUrl}}"], "path": ["api","v1","get-recent-books"] } }
+        },
+        {
+          "name": "Add Book (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "id", "value": "{{userId}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/v1/add-book", "host": ["{{baseUrl}}"], "path": ["api","v1","add-book"] },
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://picsum.photos/200\",\n  \"title\": \"Demo Book\",\n  \"author\": \"Anon\",\n  \"price\": 10,\n  \"desc\": \"A demo book\",\n  \"language\": \"EN\"\n}" }
+          }
+        },
+        {
+          "name": "Get Book By Id",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/get-book-by-id/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","get-book-by-id","{{bookId}}"] } }
+        },
+        {
+          "name": "Admin: Get Pending Books",
+          "request": { 
+            "method": "GET", 
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/pending-approval", "host": ["{{baseUrl}}"], "path": ["api","v1","pending-approval"] } 
+          }
+        },
+        {
+          "name": "Admin: Approve Book",
+          "request": { 
+            "method": "POST", 
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "id", "value": "{{userId}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/approve-book/{{pendingBookId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","approve-book","{{pendingBookId}}"] } 
+          }
+        },
+        {
+          "name": "Admin: Reject Book",
+          "request": { 
+            "method": "POST", 
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }, { "key": "id", "value": "{{userId}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/reject-book/{{pendingBookId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","reject-book","{{pendingBookId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Content not suitable for our platform\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "Add to Favorites",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "bookid", "value": "{{bookId}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/add-book-to-fav", "host": ["{{baseUrl}}"], "path": ["api","v1","add-book-to-fav"] }
+          }
+        },
+        {
+          "name": "Remove from Favorites",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "bookid", "value": "{{bookId}}" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/remove-book-from-fav", "host": ["{{baseUrl}}"], "path": ["api","v1","remove-book-from-fav"] }
+          }
+        },
+        {
+          "name": "Get Favorites",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/get-favorite-books", "host": ["{{baseUrl}}"], "path": ["api","v1","get-favorite-books"] } }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "bookid", "value": "{{bookId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/add-to-cart", "host": ["{{baseUrl}}"], "path": ["api","v1","add-to-cart"] } }
+        },
+        {
+          "name": "Remove from Cart",
+          "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/remove-from-cart/{{bookId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","remove-from-cart","{{bookId}}"] } }
+        },
+        {
+          "name": "Get My Cart",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/get-users-carts", "host": ["{{baseUrl}}"], "path": ["api","v1","get-users-carts"] } }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/place-order", "host": ["{{baseUrl}}"], "path": ["api","v1","place-order"] },
+            "body": { "mode": "raw", "raw": "{\n  \"order\": [ { \"_id\": \"{{bookId}}\" } ]\n}" }
+          }
+        },
+        {
+          "name": "Place Order (Listing)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/place-order", "host": ["{{baseUrl}}"], "path": ["api","v1","place-order"] },
+            "body": { "mode": "raw", "raw": "{\n  \"listingId\": \"{{listingId}}\"\n}" }
+          }
+        },
+        {
+          "name": "My Order History",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/add-order-history", "host": ["{{baseUrl}}"], "path": ["api","v1","add-order-history"] } }
+        },
+        {
+          "name": "Get All Orders (admin)",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/get-all-orders", "host": ["{{baseUrl}}"], "path": ["api","v1","get-all-orders"] } }
+        },
+        {
+          "name": "Update Order Status (admin)",
+          "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/v1/update-status/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","update-status","{{orderId}}"] }, "body": { "mode": "raw", "raw": "{\n  \"status\": \"Delivered\"\n}" } }
+        }
+      ]
+    },
+    {
+      "name": "Social",
+      "item": [
+        { "name": "Follow", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/follow/{{targetUserId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","follow","{{targetUserId}}"] } } },
+        { "name": "Unfollow", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/follow/{{targetUserId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","follow","{{targetUserId}}"] } } },
+        { "name": "Followers", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/followers/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","followers","{{userId}}"] } } },
+        { "name": "Following", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/following/{{userId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","following","{{userId}}"] } } }
+      ]
+    },
+    {
+      "name": "Friend Requests",
+      "item": [
+        { "name": "Send Request", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/friends/request/{{targetUserId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","friends","request","{{targetUserId}}"] } } },
+        { "name": "Pending For Me", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/friends/pending", "host": ["{{baseUrl}}"], "path": ["api","v1","friends","pending"] } } },
+        { "name": "Accept", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/friends/accept/{{requestId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","friends","accept","{{requestId}}"] } } },
+        { "name": "Decline", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/friends/decline/{{requestId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","friends","decline","{{requestId}}"] } } }
+      ]
+    },
+    {
+      "name": "Chat",
+      "item": [
+        {
+          "name": "Ensure 1:1 Conversation",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/chat/ensure", "host": ["{{baseUrl}}"], "path": ["api","v1","chat","ensure"] },
+            "body": { "mode": "raw", "raw": "{\n  \"targetUserId\": \"{{targetUserId}}\"\n}" }
+          },
+          "event": [
+            { "listen": "test", "script": { "type": "text/javascript", "exec": [
+              "const res = pm.response.json();",
+              "if (res && res.data && res.data._id) pm.collectionVariables.set('conversationId', res.data._id);"
+            ] } }
+          ]
+        },
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/api/v1/chat/{{conversationId}}/message", "host": ["{{baseUrl}}"], "path": ["api","v1","chat","{{conversationId}}","message"] },
+            "body": { "mode": "raw", "raw": "{\n  \"content\": \"Hello there!\"\n}" }
+          }
+        },
+        {
+          "name": "List Messages",
+          "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/chat/{{conversationId}}/messages", "host": ["{{baseUrl}}"], "path": ["api","v1","chat","{{conversationId}}","messages"] } }
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        { "name": "Create Post", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/v1/posts", "host": ["{{baseUrl}}"], "path": ["api","v1","posts"] }, "body": { "mode": "raw", "raw": "{\n  \"text\": \"First post!\",\n  \"tags\": [\"BookReview\"]\n}" } } },
+        { "name": "Feed", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/posts/feed", "host": ["{{baseUrl}}"], "path": ["api","v1","posts","feed"] } } },
+        { "name": "React", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/v1/posts/{{postId}}/react", "host": ["{{baseUrl}}"], "path": ["api","v1","posts","{{postId}}","react"] }, "body": { "mode": "raw", "raw": "{\n  \"type\": \"like\"\n}" } } },
+        { "name": "Unreact", "request": { "method": "DELETE", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/posts/{{postId}}/react", "host": ["{{baseUrl}}"], "path": ["api","v1","posts","{{postId}}","react"] } } },
+        { "name": "Comment", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/v1/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["api","v1","posts","{{postId}}","comments"] }, "body": { "mode": "raw", "raw": "{\n  \"text\": \"Nice post!\"\n}" } } },
+        { "name": "List Comments", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/posts/{{postId}}/comments", "host": ["{{baseUrl}}"], "path": ["api","v1","posts","{{postId}}","comments"] } } }
+      ]
+    },
+    {
+      "name": "Blogs",
+      "item": [
+        { "name": "Create Blog", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/v1/blogs", "host": ["{{baseUrl}}"], "path": ["api","v1","blogs"] }, "body": { "mode": "raw", "raw": "{\n  \"title\": \"My Review\",\n  \"body\": \"Great book...\",\n  \"tags\": [\"BookReview\"]\n}" } } },
+        { "name": "Update Blog", "request": { "method": "PUT", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" }, { "key": "Content-Type", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}/api/v1/blogs/{{blogId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","blogs","{{blogId}}"] }, "body": { "mode": "raw", "raw": "{\n  \"title\": \"Updated Title\"\n}" } } },
+        { "name": "List Blogs", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/v1/blogs?tag={{tag}}&author={{authorId}}", "host": ["{{baseUrl}}"], "path": ["api","v1","blogs"], "query": [ { "key": "tag", "value": "{{tag}}" }, { "key": "author", "value": "{{authorId}}" } ] } } }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/notifications", "host": ["{{baseUrl}}"], "path": ["api","v1","notifications"] } } },
+        { "name": "Mark Read", "request": { "method": "POST", "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "id", "value": "{{userId}}" } ], "url": { "raw": "{{baseUrl}}/api/v1/notifications/mark-read", "host": ["{{baseUrl}}"], "path": ["api","v1","notifications","mark-read"] } } }
+      ]
+    }
+  ]
+}
+
+

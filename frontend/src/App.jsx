@@ -1,33 +1,127 @@
-/* eslint-disable no-unused-vars */
-import React from "react";
-import Home from "./pages/home";
-import Navbar from "./components/Navbar/Navbar";
-import Footer from "./components/Footer/Footer";
-import {Route, Routes } from "react-router-dom";
-import AllBooks from './pages/AllBooks';
-import Login from './pages/LogIn';
-import SignUp from "./pages/SignUp";
-import Cart from "./pages/Cart";
-import Profile from "./pages/Profile";
-import ViewBookDetails from "./components/ViewBookDetails/ViewBookDetails";
+import React, { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar/Navbar';
+import Footer from './components/Footer/Footer';
+import Loader from './components/loader/loader';
+import { Toaster } from 'react-hot-toast';
 
-const App = () => {
+// Lazy load components for better performance
+const Home = lazy(() => import('./pages/home'));
+const AllBooks = lazy(() => import('./pages/AllBooks'));
+const BookDetails = lazy(() => import('./components/ViewBookDetails/ViewBookDetails'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Login = lazy(() => import('./pages/LogIn'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const Market = lazy(() => import('./pages/Market'));
+const Blog = lazy(() => import('./pages/Blog'));
+const Social = lazy(() => import('./pages/Social'));
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" replace />;
+};
+
+// Loading Component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <Loader />
+  </div>
+);
+
+function App() {
   return (
-    <div>
-        <Navbar />
-        <Routes>
-          <Route exact path="/" element={<Home />} />
-          <Route  path="/all-books" element={<AllBooks />} />
-          <Route  path="/Cart" element={<Cart />} />
-          <Route  path="/Profile" element={<Profile />} />
-          <Route  path="/LogIn" element={<Login />} />
-          <Route  path="/SignUp" element={<SignUp />} />
-          <Route  path="view-book-details/:id" element={<ViewBookDetails />} />
-
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50">
+      <Navbar />
+      
+      <main className="flex-grow">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/books" element={<AllBooks />} />
+            <Route path="/books/:id" element={<BookDetails />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/cart" 
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/market" 
+              element={
+                <ProtectedRoute>
+                  <Market />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/blog" 
+              element={
+                <ProtectedRoute>
+                  <Blog />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/social" 
+              element={
+                <ProtectedRoute>
+                  <Social />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <Footer/>
+        </Suspense>
+      </main>
+      
+      <Footer />
+
+      {/* Toast notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10B981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   );
-};
+}
 
 export default App;

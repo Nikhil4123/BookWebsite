@@ -24,7 +24,7 @@ router.put("/add-to-cart", authenticateToken, async (req, res) => {
   }
 });
 
-router.put("/remove-from-cart/:bookid", authenticateToken, async (req, res) => {
+router.delete("/remove-from-cart/:bookid", authenticateToken, async (req, res) => {
   try {
     const { bookid } = req.params;
     const { id } = req.headers;

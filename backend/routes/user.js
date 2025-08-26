@@ -65,7 +65,8 @@ router.post("/sign-in", async (req, res) => {
           { role: existingUser.role },
         ];
 
-        const token = jwt.sign({ authClaims }, "bookstore123", {
+        const secret = process.env.JWT_SECRET || "bookstore123";
+        const token = jwt.sign({ authClaims }, secret, {
           expiresIn: "30d",
         });
         res.status(200).json({
@@ -103,6 +104,22 @@ router.put("/update-address", authenticateToken, async (req, res) => {
     const { address } = req.body;
     await user.findByIdAndUpdate(id, { address });
     return res.status(200).json({ message: "Address Updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal service error " });
+  }
+});
+
+// Update profile (bio, avatar, coverPhoto, preferences, privacy)
+router.put("/update-profile", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.headers;
+    const { bio, avatar, coverPhoto, favoriteGenres, studyInterests, readingStatus, privacy } = req.body;
+    const updated = await user.findByIdAndUpdate(
+      id,
+      { bio, avatar, coverPhoto, favoriteGenres, studyInterests, readingStatus, privacy },
+      { new: true }
+    ).select("-password");
+    return res.status(200).json({ status: "success", data: updated });
   } catch (error) {
     res.status(500).json({ message: "Internal service error " });
   }
