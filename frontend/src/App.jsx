@@ -1,5 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/Footer/Footer';
 import Loader from './components/loader/loader';
@@ -31,8 +34,23 @@ const PageLoader = () => (
 );
 
 function App() {
+  const { theme } = useSelector((state) => state.ui);
+
+  useEffect(() => {
+    // Apply theme to document
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      theme === 'dark' 
+        ? 'bg-gray-900 text-white' 
+        : 'bg-gradient-to-br from-gray-50 to-blue-50 text-gray-900'
+    }`}>
       <Navbar />
       
       <main className="flex-grow">
@@ -101,7 +119,7 @@ function App() {
         toastOptions={{
           duration: 4000,
           style: {
-            background: '#363636',
+            background: theme === 'dark' ? '#1f2937' : '#363636',
             color: '#fff',
           },
           success: {

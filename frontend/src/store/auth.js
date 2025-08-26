@@ -1,15 +1,20 @@
 /* eslint-disable no-unused-vars */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
-const API_BASE_URL = 'http://localhost:5000/api/v1';
 
 // Async thunks
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/login`, credentials);
+      // Backend expects username and password at /sign-in
+      const payload = {
+        username: credentials.username || credentials.email || credentials.name,
+        password: credentials.password,
+      };
+      const response = await axios.post(`${API_BASE_URL}/sign-in`, payload);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -21,7 +26,14 @@ export const registerUser = createAsyncThunk(
   'auth/registerUser',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/register`, userData);
+      // Backend expects username, email, password, address at /sign-up
+      const payload = {
+        username: userData.username || userData.name,
+        email: userData.email,
+        password: userData.password,
+        address: userData.address || '',
+      };
+      const response = await axios.post(`${API_BASE_URL}/sign-up`, payload);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
@@ -41,9 +53,11 @@ export const fetchUserProfile = createAsyncThunk(
         throw new Error('User not authenticated');
       }
 
-      const response = await axios.get(`${API_BASE_URL}/get-user/${userId}`, {
+      // Backend uses /get-user-information with id in headers
+      const response = await axios.get(`${API_BASE_URL}/get-user-information`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          id: userId,
         },
       });
       return response.data;
@@ -65,9 +79,11 @@ export const updateUserProfile = createAsyncThunk(
         throw new Error('User not authenticated');
       }
 
-      const response = await axios.put(`${API_BASE_URL}/update-user/${userId}`, updateData, {
+      // Map to backend /update-profile endpoint; send id in headers
+      const response = await axios.put(`${API_BASE_URL}/update-profile`, updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          id: userId,
         },
       });
       return response.data;

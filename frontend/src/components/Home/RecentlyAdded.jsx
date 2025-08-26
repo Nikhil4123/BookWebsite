@@ -9,6 +9,7 @@ import { fetchBooks } from '../../store/books';
 const RecentlyAdded = () => {
   const dispatch = useDispatch();
   const { books, loading } = useSelector((state) => state.books);
+  const { theme } = useSelector((state) => state.ui);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -61,7 +62,11 @@ const RecentlyAdded = () => {
   };
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
+    <section className={`py-16 px-4 sm:px-6 lg:px-8 ${
+      theme === 'dark' 
+        ? 'bg-gray-800' 
+        : 'bg-gradient-to-br from-gray-50 to-blue-50'
+    }`}>
       <div className="max-w-7xl mx-auto">
         <motion.div
           variants={containerVariants}
@@ -77,11 +82,15 @@ const RecentlyAdded = () => {
               <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center">
                 <FiClock className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              <h2 className={`text-3xl md:text-4xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 Recently Added
               </h2>
             </div>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className={`text-lg max-w-2xl mx-auto ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>
               Discover the latest additions to our collection. Fresh stories, new authors, and exciting reads 
               are added regularly to keep your reading journey fresh and engaging.
             </p>
@@ -95,7 +104,7 @@ const RecentlyAdded = () => {
             >
               <div className="text-center">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading recent books...</p>
+                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Loading recent books...</p>
               </div>
             </motion.div>
           ) : (
@@ -121,16 +130,24 @@ const RecentlyAdded = () => {
             variants={itemVariants}
             className="text-center"
           >
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 max-w-2xl mx-auto">
+            <div className={`rounded-2xl p-8 shadow-lg border max-w-2xl mx-auto ${
+              theme === 'dark' 
+                ? 'bg-gray-800 border-gray-700' 
+                : 'bg-white border-gray-100'
+            }`}>
               <div className="flex items-center justify-center space-x-3 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
                   <FiTrendingUp className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">
+                <h3 className={`text-2xl font-bold ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
                   Stay Updated
                 </h3>
               </div>
-              <p className="text-gray-600 mb-6">
+              <p className={`mb-6 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
                 Never miss out on new releases and trending books. Our collection is constantly growing 
                 with carefully curated selections from around the world.
               </p>
@@ -186,10 +203,12 @@ const RecentlyAdded = () => {
                 <div className={`w-16 h-16 bg-gradient-to-r ${stat.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
                   <stat.icon className="w-8 h-8 text-white" />
                 </div>
-                <h4 className="text-2xl font-bold text-gray-900 mb-2">
+                <h4 className={`text-2xl font-bold mb-2 ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
                   {stat.number}
                 </h4>
-                <p className="text-gray-600">
+                <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>
                   {stat.label}
                 </p>
               </motion.div>
