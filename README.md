@@ -173,4 +173,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ⭐ **Star this repository if you found it helpful!**
 
 </div>
+<<<<<<< HEAD
 Footer
+=======
+Footer
+>>>>>>> 5335159a86a63e9d76b6aea2c933e76a71567dba
