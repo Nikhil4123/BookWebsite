@@ -131,7 +131,7 @@ const Profile = () => {
   };
 
   if (loading || profileLoading) {
-    return (
+  return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-black dark:via-zinc-950 dark:to-zinc-900 pt-20">
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

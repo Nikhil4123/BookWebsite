@@ -1,371 +1,316 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
-  FiSearch, 
-  FiPlus, 
-  FiFilter, 
-  FiX,
-  FiBookOpen,
-  FiUser,
-  FiTag,
-  FiCalendar
+  FiSearch, FiClock, FiBookOpen, FiGrid, FiList, FiArrowRight, FiCalendar
 } from 'react-icons/fi';
-import { fetchBlogs, searchBlogs, createBlog, setFilters, clearFilters } from '../store/blogs';
-import { setSearchQuery, clearSearch } from '../store/ui';
-import toast from 'react-hot-toast';
+import { fetchBlogs } from '../store/blogs';
 
 const Blog = () => {
   const dispatch = useDispatch();
-  const { blogs, searchResults, loading, error, filters } = useSelector((state) => state.blogs);
-  const { searchQuery } = useSelector((state) => state.ui);
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { blogs, loading } = useSelector((state) => state.blogs);
   
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [newBlog, setNewBlog] = useState({
-    title: '',
-    body: '',
-    tags: '',
-    coverImage: ''
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     dispatch(fetchBlogs());
+    
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
   }, [dispatch]);
 
-  // Handle search
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setIsSearching(true);
-      dispatch(searchBlogs(searchQuery.trim()));
-    }
-  };
+  // Categories based on blog tags
+  const categories = [
+    { id: 'all', name: 'All Posts', count: blogs.length },
+    { id: 'reading-habits', name: 'Reading Habits', count: blogs.filter(blog => blog.tags?.includes('Reading Habits')).length },
+    { id: 'book-reviews', name: 'Book Reviews', count: blogs.filter(blog => blog.tags?.includes('Book Recommendations')).length },
+    { id: 'genre-analysis', name: 'Genre Analysis', count: blogs.filter(blog => blog.tags?.includes('Science Fiction') || blog.tags?.includes('Romance')).length },
+    { id: 'self-improvement', name: 'Self-Improvement', count: blogs.filter(blog => blog.tags?.includes('Self-Improvement')).length }
+  ];
 
-  // Clear search
-  const handleClearSearch = () => {
-    dispatch(clearSearch());
-    dispatch(clearFilters());
-    setIsSearching(false);
-  };
-
-  // Handle filter changes
-  const handleFilterChange = (filterType, value) => {
-    dispatch(setFilters({ [filterType]: value }));
-  };
-
-  // Create new blog
-  const handleCreateBlog = async (e) => {
-    e.preventDefault();
-    if (!newBlog.title.trim() || !newBlog.body.trim()) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    const blogData = {
-      ...newBlog,
-      tags: newBlog.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
-    };
-
-    try {
-      await dispatch(createBlog(blogData)).unwrap();
-      setShowCreateModal(false);
-      setNewBlog({ title: '', body: '', tags: '', coverImage: '' });
-      toast.success('Blog created successfully!');
-    } catch (error) {
-      toast.error(error || 'Failed to create blog');
-    }
-  };
-
-  // Get display blogs (search results or all blogs)
-  const displayBlogs = isSearching ? searchResults : blogs;
-
-  // Filter blogs based on current filters
-  const filteredBlogs = displayBlogs.filter(blog => {
-    if (filters.tag && !blog.tags?.includes(filters.tag)) return false;
-    if (filters.author && blog.author?.username !== filters.author) return false;
-    return true;
+  // Filter blogs based on search and category
+  const filteredBlogs = blogs.filter(blog => {
+    const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         blog.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         blog.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesCategory = selectedCategory === 'all' || 
+                           (selectedCategory === 'reading-habits' && blog.tags?.includes('Reading Habits')) ||
+                           (selectedCategory === 'book-reviews' && blog.tags?.includes('Book Recommendations')) ||
+                           (selectedCategory === 'genre-analysis' && (blog.tags?.includes('Science Fiction') || blog.tags?.includes('Romance'))) ||
+                           (selectedCategory === 'self-improvement' && blog.tags?.includes('Self-Improvement'));
+    
+    return matchesSearch && matchesCategory;
   });
 
-  return (
-    <div className="min-h-screen pt-20 px-6 bg-gray-50 dark:bg-zinc-900">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Blog Community
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Discover, share, and discuss your favorite books and reading experiences
-              </p>
-            </div>
-            
-            {isAuthenticated && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <FiPlus className="h-5 w-5" />
-                Write Blog
-              </button>
-            )}
-          </div>
-        </div>
+  const animationVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
 
-        {/* Search and Filters */}
-        <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700 p-6 mb-8">
-          <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
-            {/* Search Bar */}
-            <div className="flex-1 max-w-md">
-              <form onSubmit={handleSearch} className="relative">
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getReadTime = (content) => {
+    const wordsPerMinute = 200;
+    const wordCount = content.split(' ').length;
+    return Math.ceil(wordCount / wordsPerMinute);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-black dark:via-zinc-950 dark:to-zinc-900 pt-20">
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-black dark:via-zinc-950 dark:to-zinc-900 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div
+          variants={animationVariants}
+          initial="hidden"
+          animate={isVisible ? "visible" : "hidden"}
+        >
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Book Blog
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Discover insights, reviews, and tips from our community of book lovers. 
+              From reading habits to genre analysis, find everything you need to enhance your reading journey.
+            </p>
+          </div>
+
+          {/* Search and Filter Bar */}
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-gray-200 dark:border-zinc-700 p-6 mb-8">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              {/* Search */}
+              <div className="relative flex-1 max-w-md">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Search blogs, authors, or tags..."
-                  value={searchQuery}
-                  onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Search blogs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-1 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  <FiSearch className="h-3 w-3" />
-                </button>
-              </form>
-            </div>
+              </div>
 
-            {/* Filter Toggle */}
-            <div className="flex items-center gap-4">
-              {isSearching && (
+              {/* Category Filter */}
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedCategory === category.id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {category.name} ({category.count})
+                  </button>
+                ))}
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center space-x-2">
                 <button
-                  onClick={handleClearSearch}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition-colors"
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'grid' 
+                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600' 
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
                 >
-                  <FiX className="h-4 w-4" />
-                  Clear Search
+                  <FiGrid className="w-5 h-5" />
                 </button>
-              )}
-              
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-              >
-                <FiFilter className="h-4 w-4" />
-                Filters
-              </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-lg transition-colors ${
+                    viewMode === 'list' 
+                      ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600' 
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <FiList className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Filters Panel */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="mt-6 pt-6 border-t border-gray-200 dark:border-zinc-700"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Filter by Tag
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter tag..."
-                      value={filters.tag}
-                      onChange={(e) => handleFilterChange('tag', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Filter by Author
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Enter author username..."
-                      value={filters.author}
-                      onChange={(e) => handleFilterChange('author', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Blog List */}
-        <div className="space-y-6">
-          {loading ? (
+          {/* Blog Posts */}
+          {filteredBlogs.length === 0 ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-300">Loading blogs...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          ) : filteredBlogs.length === 0 ? (
-            <div className="text-center py-12">
-              <FiBookOpen className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {isSearching ? 'No blogs found' : 'No blogs yet'}
-              </h3>
+              <FiBookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No blogs found</h3>
               <p className="text-gray-600 dark:text-gray-300">
-                {isSearching ? 'Try adjusting your search terms' : 'Be the first to share your thoughts!'}
+                Try adjusting your search or filter criteria.
               </p>
             </div>
           ) : (
-            filteredBlogs.map((blog) => (
-              <motion.div
-                key={blog._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-700 p-6 hover:shadow-xl transition-shadow"
-              >
-                <div className="flex items-start gap-4">
-                  {blog.coverImage && (
-                    <img
-                      src={blog.coverImage}
-                      alt={blog.title}
-                      className="w-24 h-24 object-cover rounded-lg"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {blog.title}
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                      {blog.body}
-                    </p>
-                    
-                    <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center gap-1">
-                        <FiUser className="h-4 w-4" />
-                        <span>{blog.author?.username || 'Anonymous'}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <FiCalendar className="h-4 w-4" />
-                        <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      {blog.tags && blog.tags.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <FiTag className="h-4 w-4" />
-                          <span>{blog.tags.join(', ')}</span>
-                        </div>
-                      )}
+                         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-6'}>
+               {filteredBlogs.map((blog) => (
+                <motion.div
+                  key={blog._id}
+                  variants={animationVariants}
+                  className={`bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-gray-200 dark:border-zinc-700 overflow-hidden hover:shadow-xl transition-shadow ${
+                    viewMode === 'list' ? 'flex' : ''
+                  }`}
+                >
+                  {/* Blog Image */}
+                  <div className={`bg-gradient-to-br from-blue-500 to-purple-600 p-8 text-white ${
+                    viewMode === 'list' ? 'w-48 flex-shrink-0' : 'h-48'
+                  }`}>
+                    <div className="flex items-center justify-center h-full">
+                      <FiBookOpen className="w-12 h-12" />
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))
-          )}
-        </div>
-      </div>
 
-      {/* Create Blog Modal */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-            onClick={() => setShowCreateModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white dark:bg-zinc-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6 border-b border-gray-200 dark:border-zinc-700">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Blog</h2>
+                  {/* Blog Content */}
+                  <div className={`p-6 ${viewMode === 'list' ? 'flex-1' : ''}`}>
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {blog.tags?.slice(0, 3).map((tag, tagIndex) => (
+                        <span
+                          key={tagIndex}
+                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs rounded-full"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                      {blog.title}
+                    </h3>
+
+                    {/* Excerpt */}
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                      {blog.body.substring(0, 150)}...
+                    </p>
+
+                    {/* Meta Information */}
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                          <FiClock className="w-4 h-4 mr-1" />
+                          <span>{getReadTime(blog.body)} min read</span>
+                        </div>
+                        <div className="flex items-center">
+                          <FiCalendar className="w-4 h-4 mr-1" />
+                          <span>{formatDate(blog.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Author */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                          {blog.author?.username?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {blog.author?.username || 'Anonymous'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Book Enthusiast
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Read More Button */}
+                      <button className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
+                        Read More
+                        <FiArrowRight className="w-4 h-4 ml-1" />
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* Featured Section */}
+          {blogs.length > 0 && (
+            <div className="mt-16">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+                Featured Posts
+              </h2>
+                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                 {blogs.slice(0, 2).map((blog) => (
+                  <motion.div
+                    key={`featured-${blog._id}`}
+                    variants={animationVariants}
+                    className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-gray-200 dark:border-zinc-700 overflow-hidden hover:shadow-xl transition-shadow"
+                  >
+                    <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-8 text-white">
+                      <div className="flex items-center justify-center h-32">
+                        <FiBookOpen className="w-16 h-16" />
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {blog.tags?.slice(0, 2).map((tag, tagIndex) => (
+                          <span
+                            key={tagIndex}
+                            className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                        {blog.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-4">
+                        {blog.body.substring(0, 200)}...
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+                            {blog.author?.username?.charAt(0)?.toUpperCase() || 'U'}
+                          </div>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {blog.author?.username || 'Anonymous'}
+                          </span>
+                        </div>
+                        <button className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors">
+                          Read Full Article
+                          <FiArrowRight className="w-4 h-4 ml-1" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-              
-              <form onSubmit={handleCreateBlog} className="p-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={newBlog.title}
-                    onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter blog title..."
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Content *
-                  </label>
-                  <textarea
-                    value={newBlog.body}
-                    onChange={(e) => setNewBlog({ ...newBlog, body: e.target.value })}
-                    rows={6}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Write your blog content..."
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Tags
-                  </label>
-                  <input
-                    type="text"
-                    value={newBlog.tags}
-                    onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter tags separated by commas..."
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Cover Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={newBlog.coverImage}
-                    onChange={(e) => setNewBlog({ ...newBlog, coverImage: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter image URL..."
-                  />
-                </div>
-                
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Create Blog
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 };
