@@ -2,11 +2,6 @@
 
 <div align="center">
 
-[![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
-[![Node.js Backend](https://img.shields.io/badge/Backend-Node.js-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/Database-MongoDB-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-
 **A modern book-selling website offering a vast collection of titles with detailed information, reviews, and a seamless purchasing experience.**
 
 *Discover your next great read and enjoy easy browsing and secure checkout.*
