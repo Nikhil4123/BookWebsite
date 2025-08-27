@@ -21,7 +21,6 @@ const AllBooks = () => {
   const dispatch = useDispatch();
   const { books, loading, filters, pagination } = useSelector((state) => state.books);
   const { searchQuery } = useSelector((state) => state.ui);
-  const { theme } = useSelector((state) => state.ui);
   
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
@@ -161,11 +160,7 @@ const AllBooks = () => {
   };
 
   return (
-    <div className={`min-h-screen pt-20 ${
-      theme === 'dark' 
-        ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
-        : 'bg-gradient-to-br from-gray-50 to-blue-50'
-    }`}>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <motion.div
@@ -173,14 +168,10 @@ const AllBooks = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${
-            theme === 'dark' ? 'text-white' : 'text-gray-900'
-          }`}>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Explore Our Book Collection
           </h1>
-          <p className={`text-xl max-w-3xl mx-auto ${
-            theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-          }`}>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover thousands of books across all genres. From bestsellers to hidden gems, 
             find your next favorite read in our carefully curated collection.
           </p>
@@ -190,11 +181,7 @@ const AllBooks = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`rounded-2xl shadow-lg border p-6 mb-8 ${
-            theme === 'dark' 
-              ? 'bg-gray-800 border-gray-700' 
-              : 'bg-white border-gray-100'
-          }`}
+          className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8"
         >
           <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
             {/* Search Bar */}
@@ -205,11 +192,7 @@ const AllBooks = () => {
                   placeholder="Search books, authors, or genres..."
                   value={searchQuery}
                   onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    theme === 'dark'
-                      ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400'
-                      : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'
-                  }`}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <button
@@ -222,19 +205,13 @@ const AllBooks = () => {
             </div>
 
             {/* View Mode Toggle */}
-            <div className={`flex items-center space-x-2 rounded-lg p-1 ${
-              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
-            }`}>
+            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-colors ${
                   viewMode === 'grid' 
-                    ? theme === 'dark'
-                      ? 'bg-gray-600 text-blue-400 shadow-sm'
-                      : 'bg-white text-blue-600 shadow-sm'
-                    : theme === 'dark'
-                      ? 'text-gray-300 hover:text-gray-100'
-                      : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <FiGrid className="w-5 h-5" />
@@ -243,12 +220,8 @@ const AllBooks = () => {
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded-md transition-colors ${
                   viewMode === 'list' 
-                    ? theme === 'dark'
-                      ? 'bg-gray-600 text-blue-400 shadow-sm'
-                      : 'bg-white text-blue-600 shadow-sm'
-                    : theme === 'dark'
-                      ? 'text-gray-300 hover:text-gray-100'
-                      : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <FiList className="w-5 h-5" />
@@ -273,26 +246,18 @@ const AllBooks = () => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className={`mt-6 pt-6 border-t ${
-                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-                }`}
+                className="mt-6 pt-6 border-t border-gray-200"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Category Filter */}
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Category
                     </label>
                     <select
                       value={localFilters.category}
                       onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        theme === 'dark'
-                          ? 'border-gray-600 bg-gray-700 text-white'
-                          : 'border-gray-300 bg-white text-gray-900'
-                      }`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="all">All Categories</option>
                       <option value="fiction">Fiction</option>
@@ -307,19 +272,13 @@ const AllBooks = () => {
 
                   {/* Price Range Filter */}
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Price Range
                     </label>
                     <select
                       value={localFilters.priceRange}
                       onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        theme === 'dark'
-                          ? 'border-gray-600 bg-gray-700 text-white'
-                          : 'border-gray-300 bg-white text-gray-900'
-                      }`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="all">All Prices</option>
                       <option value="0-10">Under $10</option>
@@ -332,19 +291,13 @@ const AllBooks = () => {
 
                   {/* Rating Filter */}
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Minimum Rating
                     </label>
                     <select
                       value={localFilters.rating}
                       onChange={(e) => handleFilterChange('rating', e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        theme === 'dark'
-                          ? 'border-gray-600 bg-gray-700 text-white'
-                          : 'border-gray-300 bg-white text-gray-900'
-                      }`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="all">Any Rating</option>
                       <option value="4">4+ Stars</option>
@@ -354,20 +307,14 @@ const AllBooks = () => {
                   </div>
 
                   {/* Availability Filter */}
-                  <div>
-                    <label className={`block text-sm font-medium mb-2 ${
-                      theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                    }`}>
+      <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Availability
                     </label>
                     <select
                       value={localFilters.availability}
                       onChange={(e) => handleFilterChange('availability', e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        theme === 'dark'
-                          ? 'border-gray-600 bg-gray-700 text-white'
-                          : 'text-gray-900'
-                      }`}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="all">All</option>
                       <option value="available">Available</option>
@@ -407,27 +354,19 @@ const AllBooks = () => {
           <div className="flex items-center space-x-4 mb-4 sm:mb-0">
             <div className="flex items-center space-x-2">
               <FiBookOpen className="w-5 h-5 text-blue-600" />
-              <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>
-                Showing <span className={`font-semibold ${
-                  theme === 'dark' ? 'text-white' : 'text-gray-900'
-                }`}>{totalBooks}</span> books
+              <span className="text-gray-600">
+                Showing <span className="font-semibold text-gray-900">{totalBooks}</span> books
               </span>
             </div>
           </div>
 
           {/* Sort Options */}
           <div className="flex items-center space-x-4">
-            <span className={`text-sm ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-            }`}>Sort by:</span>
+            <span className="text-sm text-gray-600">Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => handleSort(e.target.value)}
-              className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
-                theme === 'dark'
-                  ? 'border-gray-600 bg-gray-700 text-white'
-                  : 'border-gray-300 bg-white text-gray-900'
-              }`}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -448,7 +387,7 @@ const AllBooks = () => {
           >
             <div className="text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Loading books...</p>
+              <p className="text-gray-600">Loading books...</p>
             </div>
           </motion.div>
         ) : filteredBooks.length === 0 ? (
@@ -457,17 +396,11 @@ const AllBooks = () => {
             animate={{ opacity: 1 }}
             className="text-center py-16"
           >
-            <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 ${
-              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
-            }`}>
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FiBookOpen className="w-12 h-12 text-gray-400" />
-            </div>
-            <h3 className={`text-xl font-semibold mb-2 ${
-              theme === 'dark' ? 'text-white' : 'text-gray-900'
-            }`}>No books found</h3>
-            <p className={`mb-6 ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-            }`}>
+          </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No books found</h3>
+            <p className="text-gray-600 mb-6">
               Try adjusting your filters or search terms to find what you're looking for.
             </p>
             <button
@@ -512,11 +445,7 @@ const AllBooks = () => {
               <button
                 onClick={() => dispatch(setCurrentPage(Math.max(1, pagination.currentPage - 1)))}
                 disabled={pagination.currentPage === 1}
-                className={`px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                  theme === 'dark'
-                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                    : 'border-gray-300 hover:bg-gray-50'
-                }`}
+                className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
                 Previous
               </button>
@@ -528,9 +457,7 @@ const AllBooks = () => {
                   className={`px-3 py-2 rounded-lg transition-colors ${
                     page === pagination.currentPage
                       ? 'bg-blue-600 text-white'
-                      : theme === 'dark'
-                        ? 'border border-gray-600 text-gray-300 hover:bg-gray-700'
-                        : 'border border-gray-300 hover:bg-gray-50'
+                      : 'border border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   {page}
@@ -540,11 +467,7 @@ const AllBooks = () => {
               <button
                 onClick={() => dispatch(setCurrentPage(Math.min(pagination.totalPages, pagination.currentPage + 1)))}
                 disabled={pagination.currentPage === pagination.totalPages}
-                className={`px-3 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
-                  theme === 'dark'
-                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
-                    : 'border-gray-300 hover:bg-gray-50'
-                }`}
+                className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
               >
                 Next
               </button>

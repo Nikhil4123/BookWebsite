@@ -17,15 +17,47 @@ router.post("/posts", authenticateToken, async (req, res) => {
 router.get("/posts/feed", authenticateToken, async (req, res) => {
 	try {
 		const { id } = req.headers;
+		const { search } = req.query;
 		const following = await Follow.find({ follower: id }).select("following");
 		const authors = following.map(f => String(f.following));
 		authors.push(String(id));
-		const posts = await Post.find({
+		
+		let query = {
 			$or: [
 				{ author: { $in: authors }, visibility: { $ne: "private" } },
 				{ author: id },
 			],
-		}).sort({ createdAt: -1 }).limit(100).populate("author", "username avatar");
+		};
+		
+		if (search) {
+			query.$and = [{
+				$or: [
+					{ text: { $regex: search, $options: 'i' } },
+					{ tags: { $in: [new RegExp(search, 'i')] } }
+				]
+			}];
+		}
+		
+		const posts = await Post.find(query).sort({ createdAt: -1 }).limit(100).populate("author", "username avatar");
+		return res.json({ status: "success", data: posts });
+	} catch (error) { return res.status(500).json({ message: "internal server error" }); }
+});
+
+// Search posts (public posts only)
+router.get("/posts/search", async (req, res) => {
+	try {
+		const { q } = req.query;
+		if (!q) {
+			return res.json({ status: "success", data: [] });
+		}
+		const query = {
+			visibility: "public",
+			$or: [
+				{ text: { $regex: q, $options: 'i' } },
+				{ tags: { $in: [new RegExp(q, 'i')] } }
+			]
+		};
+		const posts = await Post.find(query).sort({ createdAt: -1 }).limit(20).populate("author", "username avatar");
 		return res.json({ status: "success", data: posts });
 	} catch (error) { return res.status(500).json({ message: "internal server error" }); }
 });

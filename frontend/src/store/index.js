@@ -5,6 +5,9 @@ import booksReducer from './books';
 import cartReducer from './cart';
 import favoritesReducer from './favorites';
 import uiReducer from './ui';
+import blogsReducer from './blogs';
+import socialReducer from './social';
+import marketReducer from './market';
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +16,9 @@ export const store = configureStore({
     cart: cartReducer,
     favorites: favoritesReducer,
     ui: uiReducer,
+    blogs: blogsReducer,
+    social: socialReducer,
+    market: marketReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

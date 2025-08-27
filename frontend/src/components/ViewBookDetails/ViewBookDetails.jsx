@@ -7,7 +7,6 @@ import { API_BASE_URL } from "../../config/api";
 import { useParams } from "react-router-dom";
 import Loader from "../loader/loader";
 import { GrLanguage } from "react-icons/gr";
-import { FiClock } from "react-icons/fi";
 
 const ViewBookDetails = () => {
   const { id } = useParams();
@@ -44,12 +43,6 @@ const ViewBookDetails = () => {
               <GrLanguage className="mr-2 md:mr-3 text-blue-400" />
               {data.language}
             </p>
-            {data.publicationYear && (
-              <p className="flex items-center justify-start text-sm md:text-base text-zinc-200 mt-4">
-                <FiClock className="mr-2 md:mr-3 text-blue-400" />
-                {data.publicationYear} ({new Date().getFullYear() - data.publicationYear} years old)
-              </p>
-            )}
             <p className="text-lg md:text-2xl text-white font-semibold mt-4">
               Price: <span className="text-yellow-400">{data.price}</span>
             </p>

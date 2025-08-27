@@ -1,12 +1,10 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import React, { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import Navbar from './components/Navbar/Navbar';
 import Footer from './components/Footer/Footer';
 import Loader from './components/loader/loader';
 import { Toaster } from 'react-hot-toast';
+import PropTypes from 'prop-types';
 
 // Lazy load components for better performance
 const Home = lazy(() => import('./pages/home'));
@@ -26,6 +24,10 @@ const ProtectedRoute = ({ children }) => {
   return token ? children : <Navigate to="/login" replace />;
 };
 
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
 // Loading Component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -34,23 +36,8 @@ const PageLoader = () => (
 );
 
 function App() {
-  const { theme } = useSelector((state) => state.ui);
-
-  useEffect(() => {
-    // Apply theme to document
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
-      theme === 'dark' 
-        ? 'bg-gray-900 text-white' 
-        : 'bg-gradient-to-br from-gray-50 to-blue-50 text-gray-900'
-    }`}>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50 dark:from-zinc-900 dark:to-black">
       <Navbar />
       
       <main className="flex-grow">
@@ -119,7 +106,7 @@ function App() {
         toastOptions={{
           duration: 4000,
           style: {
-            background: theme === 'dark' ? '#1f2937' : '#363636',
+            background: '#363636',
             color: '#fff',
           },
           success: {

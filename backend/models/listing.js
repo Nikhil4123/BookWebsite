@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 const listing = new mongoose.Schema(
   {
-    type: { type: String, enum: ["original", "resale"], required: true },
+    type: { 
+      type: String, 
+      enum: ["new_book", "old_book_own", "old_book_other"], 
+      required: true 
+    },
     seller: { type: mongoose.Types.ObjectId, ref: "user", required: true },
     bookRef: { type: mongoose.Types.ObjectId, ref: "books" },
     proposedBook: { type: mongoose.Types.ObjectId, ref: "proposedBook" },
@@ -13,8 +17,20 @@ const listing = new mongoose.Schema(
     photos: [{ type: String }],
     notes: { type: String, default: "" },
     complianceAck: { type: Boolean, default: false },
-    status: { type: String, enum: ["pending_verification", "active", "paused", "rejected", "sold"], default: "active" },
+    status: { 
+      type: String, 
+      enum: ["pending_verification", "active", "paused", "rejected", "sold"], 
+      default: "active" 
+    },
     docBundleId: { type: String },
+    // New fields for enhanced functionality
+    isbn: { type: String },
+    originalOwner: { type: mongoose.Types.ObjectId, ref: "user" },
+    purchaseDate: { type: Date },
+    reasonForSelling: { type: String },
+    adminNotes: { type: String },
+    approvedBy: { type: mongoose.Types.ObjectId, ref: "user" },
+    approvedAt: { type: Date },
   },
   { timestamps: true }
 );

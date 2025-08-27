@@ -199,25 +199,25 @@ const SignUp = () => {
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Full Name
-                </label>
+            </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FiUser className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
+            <input
                     id="name"
                     name="name"
-                    type="text"
+              type="text"
                     autoComplete="name"
                     required
                     value={formData.name}
-                    onChange={handleChange}
+              onChange={handleChange}
                     className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       validationErrors.name ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter your full name"
-                  />
-                </div>
+            />
+          </div>
                 {validationErrors.name && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <FiAlertCircle className="w-4 h-4 mr-1" />
@@ -230,19 +230,19 @@ const SignUp = () => {
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                   Email Address
-                </label>
+            </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FiMail className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    id="email"
-                    name="email"
+            <input
+              id="email"
+              name="email"
                     type="email"
                     autoComplete="email"
                     required
-                    value={formData.email}
-                    onChange={handleChange}
+              value={formData.email}
+              onChange={handleChange}
                     className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       validationErrors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                     }`}
@@ -305,8 +305,8 @@ const SignUp = () => {
                     className={`block w-full pl-10 pr-3 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       validationErrors.dateOfBirth ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                     }`}
-                  />
-                </div>
+            />
+          </div>
                 {validationErrors.dateOfBirth && (
                   <p className="mt-1 text-sm text-red-600 flex items-center">
                     <FiAlertCircle className="w-4 h-4 mr-1" />
@@ -318,20 +318,20 @@ const SignUp = () => {
               {/* Password Field */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
+              Password
+            </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FiLock className="h-5 w-5 text-gray-400" />
                   </div>
-                  <input
-                    id="password"
-                    name="password"
+            <input
+              id="password"
+              name="password"
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
-                    value={formData.password}
-                    onChange={handleChange}
+              value={formData.password}
+              onChange={handleChange}
                     className={`block w-full pl-10 pr-10 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       validationErrors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                     }`}
@@ -355,13 +355,13 @@ const SignUp = () => {
                     {validationErrors.password}
                   </p>
                 )}
-              </div>
+          </div>
 
               {/* Confirm Password Field */}
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm Password
-                </label>
+            </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <FiLock className="h-5 w-5 text-gray-400" />
@@ -373,7 +373,7 @@ const SignUp = () => {
                     autoComplete="new-password"
                     required
                     value={formData.confirmPassword}
-                    onChange={handleChange}
+              onChange={handleChange}
                     className={`block w-full pl-10 pr-10 py-3 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
                       validationErrors.confirmPassword ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
                     }`}
@@ -410,13 +410,13 @@ const SignUp = () => {
                 <div className="flex items-center">
                   <FiAlertCircle className="h-5 w-5 text-red-400 mr-2" />
                   <p className="text-sm text-red-600">{error}</p>
-                </div>
+          </div>
               </motion.div>
             )}
 
             {/* Submit Button */}
             <motion.button
-              type="submit"
+            type="submit"
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -450,8 +450,8 @@ const SignUp = () => {
                   className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
                 >
                   Sign in here
-                </Link>
-              </div>
+          </Link>
+        </div>
             </motion.div>
           </motion.form>
         </motion.div>

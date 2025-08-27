@@ -1,47 +1,77 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { FiHeart, FiShoppingCart, FiEye, FiStar, FiBookOpen, FiClock, FiUser } from 'react-icons/fi';
-import { addToCart, removeFromCart } from '../../store/cart';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { 
+  FiShoppingCart, 
+  FiHeart, 
+  FiEye, 
+  FiStar, 
+  FiClock,
+  FiUser,
+  FiTag
+} from 'react-icons/fi';
+import { addToCart } from '../../store/cart';
 import { addToFavorites, removeFromFavorites } from '../../store/favorites';
 import toast from 'react-hot-toast';
 
-const BookCard = ({ book }) => {
+const BookCard = ({ book, showActions = true, className = '' }) => {
   const dispatch = useDispatch();
-  const { items: cartItems } = useSelector((state) => state.cart);
-  const { items: favoriteItems } = useSelector((state) => state.favorites);
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const { theme } = useSelector((state) => state.ui);
+  const { items: cartItems } = useSelector((state) => state.cart);
+  const { items: favoriteItems } = useSelector((state) => state.favorites || { items: [] });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  const [isHovered, setIsHovered] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  // Derive image url with multi-field fallback
+  const deriveImageUrl = () => {
+    if (imageError) return 'https://via.placeholder.com/300x400?text=Book+Cover';
+    return (
+      book.coverImage ||
+      book.image ||
+      book.url ||
+      (book.images && (book.images.cover || book.images.main)) ||
+      'https://via.placeholder.com/300x400?text=Book+Cover'
+    );
+  };
+  
+  const isInCart = cartItems.some(item => item._id === book._id);
+  const isFavorite = favoriteItems.some(item => item._id === book._id);
 
-  const isInCart = cartItems?.some(item => item._id === book._id) || false;
-  const isInFavorites = favoriteItems?.some(item => item._id === book._id) || false;
-
-  const handleAddToCart = () => {
+  // Handle add to cart
+  const handleAddToCart = async () => {
     if (!isAuthenticated) {
       toast.error('Please login to add items to cart');
       return;
     }
+    
     if (isInCart) {
-      dispatch(removeFromCart(book._id));
-      toast.success('Removed from cart');
-    } else {
-      dispatch(addToCart({ ...book, quantity: 1 }));
-      toast.success('Added to cart');
+      toast.success('Book is already in your cart');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await dispatch(addToCart(book._id)).unwrap();
+      toast.success('Added to cart successfully');
+    } catch (error) {
+      toast.error(error || 'Failed to add to cart');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleToggleFavorite = () => {
+  // Handle favorite toggle
+  const handleFavoriteToggle = () => {
     if (!isAuthenticated) {
       toast.error('Please login to add favorites');
       return;
     }
-    if (isInFavorites) {
+
+    if (isFavorite) {
       dispatch(removeFromFavorites(book._id));
       toast.success('Removed from favorites');
     } else {
@@ -50,249 +80,172 @@ const BookCard = ({ book }) => {
     }
   };
 
+  // Handle image error
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  // Format price
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
+    if (!price) return 'Free';
+    return `$${parseFloat(price).toFixed(2)}`;
   };
 
-  const getRatingColor = (rating) => {
-    if (rating >= 4.5) return 'from-green-400 to-emerald-500';
-    if (rating >= 4.0) return 'from-blue-400 to-cyan-500';
-    if (rating >= 3.5) return 'from-yellow-400 to-orange-500';
-    if (rating >= 3.0) return 'from-orange-400 to-red-500';
-    return 'from-gray-400 to-gray-500';
+  // Format rating
+  const formatRating = (rating) => {
+    if (!rating) return '4.5';
+    return parseFloat(rating).toFixed(1);
   };
 
-  const getStatusBadge = () => {
-    if (book.availability === 'in-stock') {
-      return (
-        <div className="absolute top-3 left-3 z-20">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-400 to-emerald-500 text-white shadow-lg">
-            <div className="w-2 h-2 bg-white rounded-full mr-1 animate-pulse"></div>
-            In Stock
-          </span>
-        </div>
-      );
-    } else if (book.availability === 'limited') {
-      return (
-        <div className="absolute top-3 left-3 z-20">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
-            <div className="w-2 h-2 bg-white rounded-full mr-1 animate-pulse"></div>
-            Limited
-          </span>
-        </div>
-      );
-    } else {
-      return (
-        <div className="absolute top-3 left-3 z-20">
-          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-red-400 to-pink-500 text-white shadow-lg">
-            <div className="w-2 h-2 bg-white rounded-full mr-1 animate-pulse"></div>
-            Out of Stock
-          </span>
-        </div>
-      );
-    }
+  // Get book status
+  const getBookStatus = () => {
+    if (book.status === 'available') return { text: 'Available', color: 'bg-green-100 text-green-800' };
+    if (book.status === 'out_of_stock') return { text: 'Out of Stock', color: 'bg-red-100 text-red-800' };
+    if (book.status === 'coming_soon') return { text: 'Coming Soon', color: 'bg-blue-100 text-blue-800' };
+    return { text: 'Available', color: 'bg-green-100 text-green-800' };
   };
 
+  const status = getBookStatus();
+  
   return (
     <motion.div
+      className={`bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-gray-100 dark:border-zinc-800 overflow-hidden hover:shadow-xl transition-all duration-300 group ${className}`}
+      whileHover={{ y: -8 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="group relative"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      transition={{ duration: 0.3 }}
     >
-      {/* 3D Book Container */}
-      <motion.div
-        animate={{
-          rotateY: isHovered ? 15 : 0,
-          rotateX: isHovered ? 5 : 0,
-          scale: isHovered ? 1.05 : 1,
-        }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className={`relative rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform perspective-1000 ${
-          theme === 'dark' ? 'bg-gray-800' : 'bg-white'
-        }`}
-      >
-        {/* Book Cover Image */}
-        <div className="relative h-80 overflow-hidden bg-gradient-to-br from-amber-50 to-orange-100">
-          {/* Loading skeleton */}
-          {!isImageLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-200 to-orange-300 animate-pulse">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <FiBookOpen className="w-16 h-16 text-amber-600 animate-bounce" />
-              </div>
-            </div>
-          )}
-          
-          <img
-            src={book.coverImage || 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}
-            alt={book.title}
-            className={`w-full h-full object-cover transition-transform duration-500 ${
-              isHovered ? 'scale-110' : 'scale-100'
-            } ${isImageLoaded ? 'opacity-100' : 'opacity-0'}`}
-            onLoad={() => setIsImageLoaded(true)}
-          />
-          
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {/* Status badge */}
-          {getStatusBadge()}
-
-          {/* Quick action buttons */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.2 }}
-                className="absolute bottom-3 left-3 right-3 flex gap-2"
-              >
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleToggleFavorite}
-                  className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isInFavorites
-                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg'
-                      : 'bg-white/90 text-gray-700 hover:bg-white hover:shadow-lg'
-                  }`}
-                >
-                  <FiHeart className={`w-4 h-4 mr-1 ${isInFavorites ? 'fill-current' : ''}`} />
-                  {isInFavorites ? 'Saved' : 'Save'}
-                </motion.button>
-                
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleAddToCart}
-                  className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isInCart
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
-                      : 'bg-white/90 text-gray-700 hover:bg-white hover:shadow-lg'
-                  }`}
-                >
-                  <FiShoppingCart className="w-4 h-4 mr-1" />
-                  {isInCart ? 'In Cart' : 'Add'}
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Book Information */}
-        <div className="p-6 space-y-4">
-          {/* Title and Author */}
-          <div className="space-y-2">
-            <Link to={`/book/${book._id}`}>
-                          <h3 className={`text-xl font-bold group-hover:text-amber-600 transition-colors duration-200 line-clamp-2 leading-tight ${
-              theme === 'dark' ? 'text-white' : 'text-gray-800'
-            }`}>
-              {book.title}
-            </h3>
-            </Link>
-            <div className={`flex items-center ${
-              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-            }`}>
-              <FiUser className="w-4 h-4 mr-2 text-amber-500" />
-              <span className="text-sm font-medium">{book.author || 'Unknown Author'}</span>
-            </div>
-          </div>
-
-          {/* Rating and Reviews */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className={`inline-flex items-center px-2 py-1 rounded-lg bg-gradient-to-r ${getRatingColor(book.rating || 4.0)} text-white text-xs font-bold`}>
-                <FiStar className="w-3 h-3 mr-1 fill-current" />
-                {book.rating || 4.0}
-              </div>
-              <span className={`text-sm ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                ({book.reviewCount || Math.floor(Math.random() * 100) + 20} reviews)
-              </span>
-            </div>
-            
-            {/* Publication year and age */}
-            {book.publicationYear ? (
-              <div className={`flex items-center text-sm ${
-                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
-              }`}>
-                <FiClock className="w-3 h-3 mr-1" />
-                <span>{book.publicationYear}</span>
-                <span className={`ml-1 text-xs ${
-                  theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
-                }`}>
-                  ({new Date().getFullYear() - book.publicationYear} years old)
-                </span>
-              </div>
-            ) : (
-              <div className={`flex items-center text-sm ${
-                theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
-              }`}>
-                <FiClock className="w-3 h-3 mr-1" />
-                <span>Publication year not available</span>
-              </div>
-            )}
-          </div>
-
-          {/* Genre tags */}
-          {book.genre && (
-            <div className="flex flex-wrap gap-2">
-              {book.genre.split(',').slice(0, 2).map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 border border-amber-200"
-                >
-                  {tag.trim()}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Price and Actions */}
-          <div className="flex items-center justify-between pt-2">
-            <div className="space-y-1">
-                          <div className={`text-2xl font-bold ${
-              theme === 'dark' ? 'text-white' : 'text-gray-800'
-            }`}>
-              {formatPrice(book.price || 19.99)}
-            </div>
-              {book.originalPrice && book.originalPrice > book.price && (
-                <div className="text-sm text-gray-500 line-through">
-                  {formatPrice(book.originalPrice)}
-                </div>
-              )}
-            </div>
-            
-            <Link
-              to={`/book/${book._id}`}
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:from-amber-600 hover:to-orange-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <FiEye className="w-4 h-4 mr-2" />
-              View Details
-            </Link>
-          </div>
-        </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-400/20 to-orange-400/20 rounded-full -translate-y-10 translate-x-10 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full translate-y-8 -translate-x-8 pointer-events-none" />
-      </motion.div>
-
-      {/* Hover effect shadow */}
-      {isHovered && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-gradient-to-r from-amber-400/20 to-orange-400/20 rounded-2xl blur-xl -z-10"
+      {/* Book Cover */}
+      <div className="relative aspect-[3/4] bg-gray-200 dark:bg-zinc-800 overflow-hidden">
+        <img
+          src={deriveImageUrl()}
+          alt={book.title}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={handleImageError}
         />
-      )}
+        
+        {/* Status Badge */}
+        <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-xs font-medium ${status.color}`}>
+          {status.text}
+          </div>
+
+        {/* Quick Actions Overlay */}
+        {showActions && (
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={handleFavoriteToggle}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                isFavorite 
+                  ? 'bg-red-500 text-white hover:bg-red-600' 
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              }`}
+            >
+              <FiHeart className={`w-5 h-5 ${isFavorite ? 'fill-current' : ''}`} />
+            </motion.button>
+            
+            <Link to={`/books/${book._id}`}>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="w-12 h-12 bg-white/20 text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+              >
+                <FiEye className="w-5 h-5" />
+              </motion.button>
+      </Link>
+          </div>
+        )}
+
+        {/* Rating Badge */}
+        <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/80 backdrop-blur-sm rounded-full px-2 py-1 flex items-center space-x-1">
+          <FiStar className="w-3 h-3 text-yellow-400 fill-current" />
+          <span className="text-xs font-medium text-gray-700">
+            {formatRating(book.rating)}
+          </span>
+        </div>
+      </div>
+
+      {/* Book Info */}
+      <div className="p-6">
+        {/* Title */}
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+          {book.title}
+        </h3>
+
+        {/* Author */}
+        <div className="flex items-center space-x-2 mb-3">
+          <FiUser className="w-4 h-4 text-gray-400" />
+          <p className="text-gray-400 dark:text-gray-300 text-sm line-clamp-1">
+            {book.author || 'Unknown Author'}
+          </p>
+        </div>
+
+        {/* Category */}
+        {book.category && (
+          <div className="flex items-center space-x-2 mb-3">
+            <FiTag className="w-4 h-4 text-gray-400" />
+            <span className="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
+              {book.category}
+            </span>
+          </div>
+        )}
+
+        {/* Price and Actions */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-xl font-bold text-blue-500 dark:text-blue-400">
+              {formatPrice(book.price)}
+            </span>
+            {book.originalPrice && book.originalPrice > book.price && (
+              <span className="text-sm text-gray-400 dark:text-gray-500 line-through">
+                {formatPrice(book.originalPrice)}
+              </span>
+            )}
+          </div>
+
+          {showActions && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleAddToCart}
+              disabled={isLoading || isInCart || book.status === 'out_of_stock'}
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${
+                isInCart
+                  ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                  : book.status === 'out_of_stock'
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg'
+              }`}
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : isInCart ? (
+                'In Cart'
+              ) : book.status === 'out_of_stock' ? (
+                'Out of Stock'
+              ) : (
+                <>
+                  <FiShoppingCart className="w-4 h-4 inline mr-2" />
+                  Add to Cart
+                </>
+              )}
+            </motion.button>
+          )}
+        </div>
+
+        {/* Additional Info */}
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-1">
+              <FiClock className="w-3 h-3" />
+              <span>{book.publishedYear || 'N/A'}</span>
+            </div>
+            <span>{book.pages || 'N/A'} pages</span>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 };

@@ -38,10 +38,39 @@ router.post("/sign-up", async (req, res) => {
       email: email,
       password: hashpasswrd,
       address: address,
+      role: req.body.role || "user", // Allow role to be set during signup
     });
 
     await newUser.save();
-    return res.status(200).json({ message: "signup Successfully" });
+    
+    // Generate token for new user
+    const authClaims = [
+      { name: newUser.username },
+      { role: newUser.role },
+    ];
+
+    const secret = process.env.JWT_SECRET || "bookstore123";
+    const token = jwt.sign({ authClaims }, secret, {
+      expiresIn: "30d",
+    });
+
+    return res.status(200).json({
+      message: "signup Successfully",
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,
+        address: newUser.address,
+        avatar: newUser.avatar,
+        bio: newUser.bio,
+        favoriteGenres: newUser.favoriteGenres,
+        studyInterests: newUser.studyInterests,
+        readingStatus: newUser.readingStatus,
+        privacy: newUser.privacy
+      },
+      token: token,
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
     console.log(error);
@@ -52,10 +81,16 @@ router.post("/sign-in", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const existingUser = await user.findOne({ username });
+    // Try to find user by username first, then by email
+    let existingUser = await user.findOne({ username });
+    
+    if (!existingUser) {
+      // If not found by username, try by email
+      existingUser = await user.findOne({ email: username });
+    }
 
     if (!existingUser) {
-      res.status(500).json({ message: "Invalid credentials" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
     await bcrypt.compare(password, existingUser.password, (err, data) => {
@@ -71,14 +106,25 @@ router.post("/sign-in", async (req, res) => {
         });
         res.status(200).json({
           message:"sign-in successful",
-          id: existingUser._id,
-          role: existingUser.role,
+          user: {
+            id: existingUser._id,
+            username: existingUser.username,
+            email: existingUser.email,
+            role: existingUser.role,
+            address: existingUser.address,
+            avatar: existingUser.avatar,
+            bio: existingUser.bio,
+            favoriteGenres: existingUser.favoriteGenres,
+            studyInterests: existingUser.studyInterests,
+            readingStatus: existingUser.readingStatus,
+            privacy: existingUser.privacy
+          },
           token: token,
         });
       } else {
-        res.status(500).json({
+        res.status(401).json({
           message:
-            "Invalid credentials maybe password or username is wrong please chek",
+            "Invalid credentials maybe password or username is wrong please check",
         });
       }
     });
@@ -92,7 +138,7 @@ router.get("/get-user-information", authenticateToken, async (req, res) => {
   try {
     const { id } = req.headers;
     const data = await user.findById(id).select("-password");
-    return res.status(200).json(data);
+    return res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ message: "Internal service error " });
   }
