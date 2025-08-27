@@ -6,7 +6,6 @@
 
 *Discover your next great read and enjoy easy browsing and secure checkout.*
 
-![BookWebsite Preview](https://github.com/user-attachments/assets/149e323a-9b54-4366-8687-b0f2dd757113)
 
 [🚀 Live Demo](#) • [📖 Documentation](#installation) • [🐛 Report Bug](#contributing) • [💡 Request Feature](#contributing)
 
