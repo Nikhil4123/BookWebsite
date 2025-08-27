@@ -4,6 +4,7 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { authenticateToken } = require("./userAuth");
+const config = require("../config");
 
 router.post("/sign-up", async (req, res) => {
   try {
@@ -49,9 +50,8 @@ router.post("/sign-up", async (req, res) => {
       { role: newUser.role },
     ];
 
-    const secret = process.env.JWT_SECRET || "bookstore123";
-    const token = jwt.sign({ authClaims }, secret, {
-      expiresIn: "30d",
+    const token = jwt.sign({ authClaims }, config.jwtSecret, {
+      expiresIn: config.jwtExpiresIn,
     });
 
     return res.status(200).json({
@@ -100,9 +100,8 @@ router.post("/sign-in", async (req, res) => {
           { role: existingUser.role },
         ];
 
-        const secret = process.env.JWT_SECRET || "bookstore123";
-        const token = jwt.sign({ authClaims }, secret, {
-          expiresIn: "30d",
+        const token = jwt.sign({ authClaims }, config.jwtSecret, {
+          expiresIn: config.jwtExpiresIn,
         });
         res.status(200).json({
           message:"sign-in successful",

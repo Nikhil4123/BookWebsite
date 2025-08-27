@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-require("dotenv").config();
+const config = require("../config");
 
 // Import the User model
 const User = require("../models/user");
@@ -8,7 +8,7 @@ const User = require("../models/user");
 const createTestUser = async () => {
   try {
     // Connect to database
-    await mongoose.connect(process.env.URI);
+    await mongoose.connect(config.mongoURI);
     console.log("Connected to Database");
 
     // Check if test user already exists

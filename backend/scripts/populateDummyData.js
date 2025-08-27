@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-require("dotenv").config();
+const config = require("../config");
 
 // Import models
 const User = require("../models/user");
@@ -11,7 +11,7 @@ const Listing = require("../models/listing");
 
 const populateDummyData = async () => {
   try {
-    await mongoose.connect(process.env.URI);
+    await mongoose.connect(config.mongoURI);
     console.log("Connected to Database");
 
     // Clear existing data (optional - comment out if you want to keep existing data)

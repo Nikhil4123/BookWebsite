@@ -1,7 +1,7 @@
 const express = require("express");
 const http = require("http");
-const cors=require("cors");
-require("dotenv").config();
+const cors = require("cors");
+const config = require("./config");
 require("./conn/conn");
 
 const app = express();
@@ -10,10 +10,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const { Server } = require("socket.io");
 const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET","POST"],
-    }
+    cors: config.socketCors
 });
 
 // Basic presence map
@@ -53,7 +50,16 @@ const Post=require("./routes/post");
 const Notification=require("./routes/notification");
 const Market=require("./routes/market");
 
-app.use(cors({origin:"*"}));
+// CORS configuration
+const corsOptions = {
+  origin: config.nodeEnv === 'production' 
+    ? [config.frontendURL] 
+    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get("/",(req,res) => {
@@ -72,6 +78,8 @@ app.use("/api/v1",Post);
 app.use("/api/v1",Notification);
 app.use("/api/v1",Market);
 
-server.listen(process.env.PORT || 5000,()=>{
-    console.log(`server Started at ${process.env.PORT || 5000}`);
-})
+server.listen(config.port, () => {
+    console.log(`🚀 Server started at port ${config.port}`);
+    console.log(`🌍 Environment: ${config.nodeEnv}`);
+    console.log(`📊 Database: ${config.mongoURI.includes('localhost') ? 'Local' : 'Cloud'}`);
+});
