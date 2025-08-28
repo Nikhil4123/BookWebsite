@@ -132,12 +132,12 @@ BookWebsite is a comprehensive full-stack web application designed to provide bo
 We welcome contributions from the community! Here's how you can help:
 
 ### 🐛 **Report Bugs**
-- Use the [Issues](https://github.com/Pavan0228/BookWebsite/issues) tab
+- Use the (https://github.com/Nikhil4123/BookWebsite) tab
 - Provide detailed reproduction steps
 - Include screenshots if applicable
 
 ### 💡 **Suggest Features**
-- Open a feature request in [Issues](https://github.com/Pavan0228/BookWebsite/issues)
+- Open a feature request in (https://github.com/Nikhil4123/BookWebsite)
 - Describe the feature and its benefits
 - Discuss implementation approaches
 
@@ -162,7 +162,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 <div align="center">
 
-**Built with ❤️ by [Pavan0228](https://github.com/Pavan0228)**
+**Built with ❤️ by Nikhil4123](https://github.com/Nikhil4123)**
 
 ⭐ **Star this repository if you found it helpful!**
 
