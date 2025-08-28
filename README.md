@@ -72,7 +72,7 @@ BookWebsite is a comprehensive full-stack web application designed to provide bo
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Pavan0228/BookWebsite.git
+   git clone https://github.com/Nikhil4123/BookWebsite.git
    cd BookWebsite
    ```
 
