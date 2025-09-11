@@ -51,14 +51,20 @@ const Notification=require("./routes/notification");
 const Market=require("./routes/market");
 
 // CORS configuration
+// Make sure the frontend origin matches the one used in development/production
 const corsOptions = {
-  origin: config.nodeEnv === 'production' 
-    ? [config.frontendURL] 
-    : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true,
-  optionsSuccessStatus: 200
+    origin: config.nodeEnv === 'production'
+        ? [config.frontendURL]
+        : [
+            'http://localhost:3000',
+            'http://localhost:5173',
+            'http://127.0.0.1:5173',
+            'http://localhost:4173',
+            'http://127.0.0.1:4173'
+        ],
+    credentials: true,
+    optionsSuccessStatus: 200
 };
-
 app.use(cors(corsOptions));
 app.use(express.json());
 
