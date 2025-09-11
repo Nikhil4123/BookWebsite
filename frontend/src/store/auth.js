@@ -190,9 +190,9 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.profileLoading = false;
-        state.user = action.payload.data;
+        state.user = action.payload.user;
         state.profileError = null;
-        localStorage.setItem('user', JSON.stringify(action.payload.data));
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.profileLoading = false;
@@ -205,9 +205,9 @@ const authSlice = createSlice({
       })
       .addCase(updateUserProfile.fulfilled, (state, action) => {
         state.profileLoading = false;
-        state.user = action.payload.data;
+        state.user = action.payload.user;
         state.profileError = null;
-        localStorage.setItem('user', JSON.stringify(action.payload.data));
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
       })
       .addCase(updateUserProfile.rejected, (state, action) => {
         state.profileLoading = false;
